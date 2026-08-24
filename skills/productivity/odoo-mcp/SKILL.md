@@ -54,6 +54,11 @@ Common models: `res.partner` (contacts), `res.users`, `product.product`,
 `sale.order`, `purchase.order`, `crm.lead`, `account.move` (invoices/journal entries),
 `stock.picking`, `project.task`, `hr.employee`.
 
+> **Verified via live probe (2026-08-24):** `sale.order` does NOT exist on `odoo_prod` —
+> the Sales app is not installed. Use `account.move` (`move_type='out_invoice'`) for
+> order/invoice data. `res.partner`, `product.product`, `stock.*`, `account.*`, `crm.*`
+> and `mail.*` models were confirmed present.
+
 Odoo domain is a list of triples: `[["is_company", "=", true]]`, `[["name", "ilike", "acme"]]`.
 `aggregate_records` groupby takes a model field, e.g. `"country_id"`; aggregates
 use Odoo aggregate names like `sum`, `avg`, `count`.
