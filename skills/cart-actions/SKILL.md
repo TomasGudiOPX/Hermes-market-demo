@@ -8,7 +8,7 @@ platforms: [linux, macos, windows]
 metadata:
   hermes:
     tags: [cart, marketplace, actions, supervised, workflow, mcp, approval, human-in-the-loop]
-    related_skills: [cart-read, cart-propose, cart-decide, cart-execute, cart-ledger, skills-sync]
+    related_skills: [cart-read, cart-propose, cart-decide, cart-execute, cart-ledger, skills-sync, erp-read, erp-aggregate, cart-erp-stock, cart-erp-customer, cart-erp-reconcile]
 ---
 
 # Cart Actions — Standard Operating Procedure
@@ -63,6 +63,16 @@ Kinds: `note`, `followup_task` = executable (slice 0); `stock_adjust`, `retire_p
 | Execute + read-back | `cart-execute` |
 | Inspect the ledger | `cart-ledger` |
 | Sync skills to the repo | `skills-sync` |
+
+### ERP & integration (cart ↔ Odoo)
+
+| Need | Skill |
+|---|---|
+| Query Odoo records | `erp-read` |
+| Aggregate ERP metrics | `erp-aggregate` |
+| Validate stock vs ERP | `cart-erp-stock` |
+| Match user ↔ ERP partner | `cart-erp-customer` |
+| Reconcile order ↔ invoice | `cart-erp-reconcile` |
 
 ## Security invariants (hard rules)
 
