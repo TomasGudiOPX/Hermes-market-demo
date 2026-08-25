@@ -1,21 +1,21 @@
 ---
 name: erp-read
 description: "Query Odoo ERP records via search, get, and list."
-version: 1.0.0
+version: 1.1.0
 author: Tomas JG, Hermes Agent
 license: MIT
 platforms: [linux, macos, windows]
 metadata:
   hermes:
     tags: [odoo, erp, mcp, query, read-only, xml-rpc]
-    related_skills: [cart-actions, cart-erp-stock, cart-erp-customer, cart-erp-reconcile, erp-aggregate]
+    related_skills: [cart-actions, cart-erp-stock, cart-erp-customer, cart-erp-reconcile, erp-aggregate, odoo-mcp]
 ---
 
 # ERP Read — Query Odoo
 
 ## Overview
 
-Query the Odoo ERP (`odoo` MCP server) read-only: search, fetch, and list records. Odoo is the marketplace's system of record for inventory, accounting, contacts, and CRM. Runs in YOLO `read` mode — write tools are present but rejected.
+Query the Odoo ERP (`odoo` MCP server) read-only: search, fetch, and list records. Odoo is the marketplace's system of record for inventory, accounting, contacts, and CRM. Runs as the scoped `mcp_reader` user in YOLO `read` mode — write tools are present but rejected.
 
 ## When to Use
 
@@ -27,7 +27,7 @@ Query the Odoo ERP (`odoo` MCP server) read-only: search, fetch, and list record
 
 ## Prerequisites
 
-- `odoo` MCP server registered (see `odoo-mcp` skill): instance `odoo.openix.net.ar`, db `odoo_prod`, user `admin`, YOLO `read`.
+- `odoo` MCP server registered (see `odoo-mcp` skill): instance `odoo.openix.net.ar`, db `odoo_prod`, user `mcp_reader` (read-only), YOLO `read`.
 - Tools appear as `mcp__odoo__<tool>`.
 
 ## Tools
@@ -47,11 +47,11 @@ Odoo domain = list of triples: `[["is_company","=",true]]`, `[["name","ilike","a
 - Contacts: `res.partner`, `res.partner.bank`, `res.country`, `res.currency`
 - Products: `product.product`, `product.template`, `product.category`, `product.pricelist`
 - Inventory: `stock.quant`, `stock.warehouse.orderpoint`, `stock.lot`, `stock.move.line`, `stock.picking`
-- Accounting: `account.move`, `account.move.line`, `account.journal`, `account.payment`, `account.invoice.report`
+- Sales/accounting: `sale.order`, `account.move`, `account.move.line`, `account.journal`, `account.payment`, `account.invoice.report`
 - CRM: `crm.lead`, `crm.stage`, `crm.tag`
 - Mail/activity: `mail.message`, `mail.activity`, `mail.followers`
 
-Note: **`sale.order` does not exist** (Sales app not installed). Order/invoice data lives in `account.move` (customer invoices).
+Note: **`sale.order` now exists** (Sales app installed). Order data lives in `sale.order`; customer invoices live in `account.move` (`move_type='out_invoice'`).
 
 ## Procedure
 
@@ -64,8 +64,8 @@ Note: **`sale.order` does not exist** (Sales app not installed). Order/invoice d
 ## Pitfalls
 
 - Write tools (`create_record`, `update_record`, etc.) exist but return "access denied" in read mode — expected.
-- `sale.order` is absent; use `account.move` for order/invoice data.
 - Field names are technical (`partner_id`, `list_price`, `qty_available`); verify against `list_models` / `get_record` when unsure.
+- For join keys between the two systems, see `references/cart-erp-join-keys.md`.
 
 ## Verification
 

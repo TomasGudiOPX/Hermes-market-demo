@@ -1,7 +1,7 @@
 ---
 name: cart-erp-customer
-description: "Match marketplace users to Odoo partners by email."
-version: 1.0.0
+description: "Match marketplace users to Odoo partners by externalId."
+version: 1.1.0
 author: Tomas JG, Hermes Agent
 license: MIT
 platforms: [linux, macos, windows]
@@ -26,25 +26,25 @@ Build a "customer 360": link a marketplace user (cart_workflow `get_user_profile
 
 ## Join key
 
-`email` — marketplace user email ↔ `res.partner.email`. **Blocker:** the marketplace masks the email (e.g. `c*******@example.com`), so the bot cannot match today. Needs an unmasked stable identifier.
+`externalId` — marketplace user `externalId` (unmasked) ↔ Odoo `res.partner.ref` (Internal Reference), falling back to `res.partner.email` (the seed sets `externalId = email`). Email stays masked in `get_user_profile`; `externalId` is the stable, unmasked join key.
 
 ## Procedure
 
-1. `get_user_profile` for the marketplace user — capture id + role + masked email.
-2. If an unmasked email (or stable id) is available, `search_records` `res.partner` by `email`.
+1. `get_user_profile` for the marketplace user — capture `id`, `role`, `externalId` (email stays masked).
+2. `search_records` `res.partner` by `ref` = `externalId`; if empty, fall back to `email` = `externalId`.
 3. If matched: pull `account.move` (invoices), `account.payment`, `crm.lead` for that partner.
-4. If not matched (masked / no key): report the blocker explicitly.
+4. If not matched (no partner with that ref/email): report "no ERP partner for externalId '<id>'" explicitly.
 
-**Completion criteria:** a linked partner + history, or an explicit "email masked — cannot match" finding.
+**Completion criteria:** a linked partner + history, or an explicit "no partner for externalId" finding.
 
 ## Pitfalls
 
-- `get_user_profile` returns a masked email by design; do not try to reverse it.
-- Odoo currently has only 2 demo partners (Administrator, My Company) — no real customers yet.
+- `get_user_profile` masks the email by design; use `externalId` for the join — never try to reverse the mask.
+- The seed sets `externalId = email` as a placeholder; a durable external id would live in `res.partner.ref`.
 - The partner join is the prerequisite for order reconciliation (`cart-erp-reconcile`).
 
 ## Verification
 
-- [ ] Marketplace user read; join key identified.
+- [ ] Marketplace user read; `externalId` captured.
 - [ ] Odoo partner matched (or blocker reported).
 - [ ] ERP history (invoices/payments/leads) attached where matched.

@@ -63,6 +63,7 @@ Kinds: `note`, `followup_task` = executable (slice 0); `stock_adjust`, `retire_p
 | Execute + read-back | `cart-execute` |
 | Inspect the ledger | `cart-ledger` |
 | Sync skills to the repo | `skills-sync` |
+| Change marketplace code | `marketplace-deploy` |
 
 ### ERP & integration (cart ↔ Odoo)
 

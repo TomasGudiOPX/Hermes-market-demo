@@ -1,7 +1,7 @@
 ---
 name: cart-erp-stock
-description: "Validate marketplace stock against Odoo inventory."
-version: 1.0.0
+description: "Validate marketplace stock against Odoo inventory by SKU."
+version: 1.1.0
 author: Tomas JG, Hermes Agent
 license: MIT
 platforms: [linux, macos, windows]
@@ -26,25 +26,25 @@ Cross-check the marketplace's product `stock` (cart_workflow `get_product` / `li
 
 ## Join key
 
-Marketplace `name` ↔ Odoo `product.product.name` today; the durable key is a **SKU** (`product.product.default_code` ↔ a future marketplace `sku`). Current seed data has zero name overlap — expect no-match until a shared SKU exists.
+`sku` — marketplace `sku` ↔ Odoo `product.product.default_code`. **Live:** the 12 marketplace products carry `MP-<CAT>-<NN>` SKUs that match Odoo's `default_code`.
 
 ## Procedure
 
-1. Read the marketplace product (`list_products` / `get_product`) — note `name`, `stock`, `isActive`.
-2. Search Odoo `product.product` by normalized `name` (or `default_code` if present).
+1. Read the marketplace product (`list_products` / `get_product`) — note `sku`, `name`, `stock`, `isActive`.
+2. Search Odoo `product.product` by `default_code` = `sku` (fall back to normalized `name` only if `sku` is null).
 3. If matched: compare marketplace `stock` vs Odoo `qty_available`; report the delta and the reorder rule (`stock.warehouse.orderpoint`).
-4. If no match: report "no ERP match for '<name>'" and recommend adding a SKU.
+4. If no match: report "no ERP match for SKU '<sku>'" explicitly.
 
 **Completion criteria:** for each product, either a matched stock delta or an explicit no-match.
 
 ## Pitfalls
 
-- Marketplace "Ceramic Coffee Set" has `stock: 0` — a real trigger, but no matching Odoo product yet.
+- Join on `default_code`, not `name` — names drift, SKUs don't.
 - `qty_available` is on-hand; `stock.quant` is the raw quantity. Use `qty_available` for a storefront view.
-- Don't fabricate a match; no-match is the honest answer until keys align.
+- Don't fabricate a match; no-match is the honest answer when a SKU is missing on either side.
 
 ## Verification
 
-- [ ] Both systems queried for the same product.
+- [ ] Both systems queried for the same product (by SKU).
 - [ ] Stock delta reported (or explicit no-match).
 - [ ] Reorder rule surfaced where relevant.

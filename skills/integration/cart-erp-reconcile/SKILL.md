@@ -1,7 +1,7 @@
 ---
 name: cart-erp-reconcile
 description: "Reconcile marketplace orders with Odoo invoices."
-version: 1.0.0
+version: 1.1.0
 author: Tomas JG, Hermes Agent
 license: MIT
 platforms: [linux, macos, windows]
@@ -15,7 +15,7 @@ metadata:
 
 ## Overview
 
-Match a marketplace order (cart_workflow `get_order` / `list_orders`) to its Odoo accounting record. Since `sale.order` isn't installed, the ERP side is `account.move` (customer invoice, `move_type='out_invoice'`) + `account.move.line`.
+Match a marketplace order (cart_workflow `get_order` / `list_orders`) to its Odoo record. `sale.order` is now installed (Sales app), so the ERP side is `sale.order` + `account.move` (customer invoice, `move_type='out_invoice'`) + `account.move.line`.
 
 ## When to Use
 
@@ -26,25 +26,26 @@ Match a marketplace order (cart_workflow `get_order` / `list_orders`) to its Odo
 
 ## Join key
 
-Order reference ↔ invoice `ref` / `invoice_origin`; fallback = total + date + partner. This is design-only until (a) the customer join works (`cart-erp-customer`) and (b) invoices are actually created in Odoo.
+Order reference ↔ `sale.order.name` / invoice `ref` / `invoice_origin`; fallback = total + date + partner. Prerequisite: the customer join (`cart-erp-customer`, by `externalId`) is wired.
 
 ## Procedure
 
 1. Read the marketplace order (`get_order`) — capture id, `totalCents`, `status`, items, `createdAt`.
-2. Search Odoo `account.move` (customer invoices) by partner + date window + total.
-3. If matched: compare totals and line items; report any discrepancy.
-4. If no match: report "no invoice in Odoo for order <id>" — reconciliation is pending, not failed.
+2. Match the customer via `cart-erp-customer` (`externalId` → partner).
+3. Search Odoo `sale.order` (then `account.move` customer invoices) by partner + date window + total.
+4. If matched: compare totals and line items; report any discrepancy.
+5. If no match: report "no invoice/order in Odoo for order <id>" — reconciliation is pending, not failed.
 
 **Completion criteria:** matched invoice + delta, or an explicit "no Odoo invoice yet".
 
 ## Pitfalls
 
-- No `sale.order` — don't search it; use `account.move` (`move_type='out_invoice'`).
+- `sale.order` is installed but empty (0 orders at check time); invoices still live in `account.move` (`move_type='out_invoice'`).
 - Totals are in different units/currencies — normalize cents vs Odoo's currency before comparing.
-- The current demo has one order ("Ceramic Coffee Set" x12) and no invoices — expect no-match.
+- The demo has no invoices yet — expect no-match until the invoice flow is exercised.
 
 ## Verification
 
-- [ ] Order read; ERP invoice searched by the right model.
+- [ ] Order read; ERP record searched by the right model.
 - [ ] Totals normalized before comparison.
 - [ ] Match or explicit no-match reported.
